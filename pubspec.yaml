@@ -1,7 +1,7 @@
-name: rma
-description: "동기부여 명언 앱"
+name: motivateme
+description: "동기부여 명언 앱 - 매일 영감을 주는 명언과 목표 설정"
 publish_to: 'none'
-version: 0.1.0
+version: 1.0.0+1
 
 environment:
   sdk: ^3.8.1

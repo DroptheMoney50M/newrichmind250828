@@ -45,7 +45,7 @@ class _MotivationAppState extends State<MotivationApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '동기부여 명언',
+      title: 'MotivateMe - 동기부여 명언',
       debugShowCheckedModeBanner: false,
       themeMode: _themeMode,
       theme: ThemeData(

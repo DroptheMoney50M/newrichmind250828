@@ -1,6 +1,6 @@
-# 🌟 동기부여 명언 앱 (RMA - Remarkable Motivation App)
+# 🌟 MotivateMe - 동기부여 명언 앱
 
-한국어로 제공되는 동기부여 명언과 개인 목표 설정 기능을 갖춘 Flutter 앱입니다.
+매일 영감을 주는 한국어 명언과 개인 목표 설정 기능을 갖춘 Flutter 앱입니다.
 
 ## 📱 주요 기능
 
