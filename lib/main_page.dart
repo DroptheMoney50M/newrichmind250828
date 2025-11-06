@@ -3,11 +3,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 import 'motivation_page.dart';
 import 'goal_page.dart';
+import 'l10n/app_localizations.dart';
+import 'services/language_service.dart';
 
 class MainPage extends StatefulWidget {
   final Function(ThemeMode) onThemeChange;
+  final LanguageService languageService;
 
-  const MainPage({super.key, required this.onThemeChange});
+  const MainPage({
+    super.key,
+    required this.onThemeChange,
+    required this.languageService,
+  });
 
   @override
   State<MainPage> createState() => _MainPageState();
@@ -16,7 +23,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   int _currentIndex = 0;
   File? _goalImage;
-  String _goalTitle = '나의 목표';
+  String _goalTitle = '';
   String _goalDescription = '';
 
   late List<Widget> _pages;
@@ -30,7 +37,7 @@ class _MainPageState extends State<MainPage> {
 
   void _initializePages() {
     _pages = [
-      MotivationPage(),
+      MotivationPage(languageService: widget.languageService),
       GoalPage(
         goalImage: _goalImage,
         goalTitle: _goalTitle,
@@ -43,7 +50,7 @@ class _MainPageState extends State<MainPage> {
   Future<void> _loadGoalData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _goalTitle = prefs.getString('goal_title') ?? '나의 목표';
+      _goalTitle = prefs.getString('goal_title') ?? '';
       _goalDescription = prefs.getString('goal_description') ?? '';
       final imagePath = prefs.getString('goal_image_path');
       if (imagePath != null && File(imagePath).existsSync()) {
@@ -66,12 +73,25 @@ class _MainPageState extends State<MainPage> {
     _initializePages();
   }
 
+  String _getLanguageName(AppLocalizations l10n, SupportedLanguage language) {
+    switch (language) {
+      case SupportedLanguage.korean:
+        return l10n.korean;
+      case SupportedLanguage.english:
+        return l10n.english;
+      case SupportedLanguage.turkish:
+        return l10n.turkish;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _currentIndex == 0 ? '동기부여 명언' : '나의 목표',
+          _currentIndex == 0 ? l10n.dailyMotivation : l10n.myGoals,
           style: const TextStyle(
             fontWeight: FontWeight.bold,
           ),
@@ -80,37 +100,66 @@ class _MainPageState extends State<MainPage> {
         elevation: 0,
         backgroundColor: Theme.of(context).colorScheme.surface,
         actions: [
+          // 언어 선택 버튼
+          PopupMenuButton<SupportedLanguage>(
+            icon: const Icon(Icons.language),
+            tooltip: l10n.language,
+            onSelected: (language) {
+              widget.languageService.changeLanguage(language);
+            },
+            itemBuilder: (context) => SupportedLanguage.values
+                .map(
+                  (language) => PopupMenuItem(
+                    value: language,
+                    child: Row(
+                      children: [
+                        Text(language.flag,
+                            style: const TextStyle(fontSize: 20)),
+                        const SizedBox(width: 8),
+                        Text(_getLanguageName(l10n, language)),
+                        if (widget.languageService.currentLanguage == language)
+                          const Padding(
+                            padding: EdgeInsets.only(left: 8),
+                            child: Icon(Icons.check, size: 16),
+                          ),
+                      ],
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
+          // 테마 선택 버튼
           PopupMenuButton<ThemeMode>(
             icon: const Icon(Icons.more_vert),
             onSelected: widget.onThemeChange,
             itemBuilder: (context) => [
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: ThemeMode.system,
                 child: Row(
                   children: [
-                    Icon(Icons.brightness_auto),
-                    SizedBox(width: 8),
-                    Text('시스템 테마'),
+                    const Icon(Icons.brightness_auto),
+                    const SizedBox(width: 8),
+                    Text(l10n.systemMode),
                   ],
                 ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: ThemeMode.light,
                 child: Row(
                   children: [
-                    Icon(Icons.light_mode),
-                    SizedBox(width: 8),
-                    Text('라이트 모드'),
+                    const Icon(Icons.light_mode),
+                    const SizedBox(width: 8),
+                    Text(l10n.lightMode),
                   ],
                 ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: ThemeMode.dark,
                 child: Row(
                   children: [
-                    Icon(Icons.dark_mode),
-                    SizedBox(width: 8),
-                    Text('다크 모드'),
+                    const Icon(Icons.dark_mode),
+                    const SizedBox(width: 8),
+                    Text(l10n.darkMode),
                   ],
                 ),
               ),
@@ -129,14 +178,14 @@ class _MainPageState extends State<MainPage> {
             _currentIndex = index;
           });
         },
-        items: const [
+        items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.format_quote),
-            label: '명언',
+            label: AppLocalizations.of(context).quote,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.flag),
-            label: '목표',
+            label: AppLocalizations.of(context).myGoals,
           ),
         ],
       ),

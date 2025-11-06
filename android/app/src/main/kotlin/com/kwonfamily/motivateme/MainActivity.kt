@@ -1,4 +1,4 @@
-package com.example.rma
+package com.kwonfamily.motivateme
 
 import io.flutter.embedding.android.FlutterActivity
 

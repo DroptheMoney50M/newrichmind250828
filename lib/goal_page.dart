@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
+import 'l10n/app_localizations.dart';
 
 class GoalPage extends StatefulWidget {
   final File? goalImage;
   final String goalTitle;
   final String goalDescription;
-  final Function({File? image, String? title, String? description}) onGoalUpdate;
+  final Function({File? image, String? title, String? description})
+      onGoalUpdate;
 
   const GoalPage({
     super.key,
@@ -32,7 +34,8 @@ class _GoalPageState extends State<GoalPage> {
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: widget.goalTitle);
-    _descriptionController = TextEditingController(text: widget.goalDescription);
+    _descriptionController =
+        TextEditingController(text: widget.goalDescription);
     _selectedImage = widget.goalImage;
   }
 
@@ -61,7 +64,8 @@ class _GoalPageState extends State<GoalPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('이미지를 선택할 수 없습니다: $e'),
+            content:
+                Text('${AppLocalizations.of(context).cannotSelectImage}: $e'),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
@@ -71,11 +75,11 @@ class _GoalPageState extends State<GoalPage> {
 
   Future<void> _saveGoal() async {
     final prefs = await SharedPreferences.getInstance();
-    
+
     // 제목과 설명 저장
     await prefs.setString('goal_title', _titleController.text);
     await prefs.setString('goal_description', _descriptionController.text);
-    
+
     // 이미지 경로 저장
     if (_selectedImage != null) {
       await prefs.setString('goal_image_path', _selectedImage!.path);
@@ -95,7 +99,7 @@ class _GoalPageState extends State<GoalPage> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('목표가 저장되었습니다'),
+          content: Text(AppLocalizations.of(context).goalSaved),
           backgroundColor: Theme.of(context).colorScheme.primary,
         ),
       );
@@ -155,15 +159,20 @@ class _GoalPageState extends State<GoalPage> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(
-                                  _isEditing ? Icons.add_photo_alternate : Icons.flag,
+                                  _isEditing
+                                      ? Icons.add_photo_alternate
+                                      : Icons.flag,
                                   size: 64,
                                   color: colorScheme.primary.withOpacity(0.6),
                                 ),
                                 const SizedBox(height: 12),
                                 Text(
-                                  _isEditing ? '이미지 추가' : '목표 이미지',
+                                  _isEditing
+                                      ? AppLocalizations.of(context).addImage
+                                      : AppLocalizations.of(context).goalImage,
                                   style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: colorScheme.onSurface.withOpacity(0.6),
+                                    color:
+                                        colorScheme.onSurface.withOpacity(0.6),
                                   ),
                                 ),
                               ],
@@ -171,9 +180,9 @@ class _GoalPageState extends State<GoalPage> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // 목표 제목 섹션
                 Container(
                   padding: const EdgeInsets.all(20),
@@ -212,20 +221,24 @@ class _GoalPageState extends State<GoalPage> {
                           ? TextField(
                               controller: _titleController,
                               decoration: InputDecoration(
-                                hintText: '나의 목표를 입력하세요',
+                                hintText:
+                                    AppLocalizations.of(context).goalTitle,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 filled: true,
-                                fillColor: colorScheme.surfaceVariant.withOpacity(0.3),
+                                fillColor:
+                                    colorScheme.surfaceVariant.withOpacity(0.3),
                               ),
                               style: theme.textTheme.titleLarge,
                               maxLength: 50,
                             )
                           : Text(
-                              _titleController.text.isEmpty ? '목표 제목을 설정하세요' : _titleController.text,
+                              _titleController.text.isEmpty
+                                  ? AppLocalizations.of(context).goalTitle
+                                  : _titleController.text,
                               style: theme.textTheme.titleLarge?.copyWith(
-                                color: _titleController.text.isEmpty 
+                                color: _titleController.text.isEmpty
                                     ? colorScheme.onSurface.withOpacity(0.5)
                                     : colorScheme.onSurface,
                                 fontWeight: FontWeight.w600,
@@ -234,9 +247,9 @@ class _GoalPageState extends State<GoalPage> {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // 목표 설명 섹션
                 Container(
                   padding: const EdgeInsets.all(20),
@@ -275,12 +288,13 @@ class _GoalPageState extends State<GoalPage> {
                           ? TextField(
                               controller: _descriptionController,
                               decoration: InputDecoration(
-                                hintText: '목표에 대한 자세한 설명을 작성하세요',
+                                hintText: AppLocalizations.of(context).goalDescriptionHint,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 filled: true,
-                                fillColor: colorScheme.surfaceVariant.withOpacity(0.3),
+                                fillColor:
+                                    colorScheme.surfaceVariant.withOpacity(0.3),
                               ),
                               maxLines: 5,
                               maxLength: 500,
@@ -289,11 +303,11 @@ class _GoalPageState extends State<GoalPage> {
                               width: double.infinity,
                               constraints: const BoxConstraints(minHeight: 80),
                               child: Text(
-                                _descriptionController.text.isEmpty 
-                                    ? '목표에 대한 설명을 추가하세요' 
+                                _descriptionController.text.isEmpty
+                                    ? '목표에 대한 설명을 추가하세요'
                                     : _descriptionController.text,
                                 style: theme.textTheme.bodyLarge?.copyWith(
-                                  color: _descriptionController.text.isEmpty 
+                                  color: _descriptionController.text.isEmpty
                                       ? colorScheme.onSurface.withOpacity(0.5)
                                       : colorScheme.onSurface,
                                   height: 1.6,
@@ -303,9 +317,9 @@ class _GoalPageState extends State<GoalPage> {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // 액션 버튼들
                 Row(
                   children: [
@@ -316,18 +330,19 @@ class _GoalPageState extends State<GoalPage> {
                             setState(() {
                               _isEditing = false;
                               _titleController.text = widget.goalTitle;
-                              _descriptionController.text = widget.goalDescription;
+                              _descriptionController.text =
+                                  widget.goalDescription;
                               _selectedImage = widget.goalImage;
                             });
                           },
-                          child: const Text('취소'),
+                          child: Text(AppLocalizations.of(context).cancel),
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: ElevatedButton(
                           onPressed: _saveGoal,
-                          child: const Text('저장'),
+                          child: Text(AppLocalizations.of(context).save),
                         ),
                       ),
                     ] else
@@ -339,7 +354,7 @@ class _GoalPageState extends State<GoalPage> {
                             });
                           },
                           icon: const Icon(Icons.edit),
-                          label: const Text('목표 수정'),
+                          label: Text(AppLocalizations.of(context).editGoalButton),
                         ),
                       ),
                   ],

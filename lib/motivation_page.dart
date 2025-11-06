@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
-import 'database/quote_database.dart';
+import 'database/quote_database.dart' as qdb;
+import 'services/language_service.dart';
+import 'l10n/app_localizations.dart';
 
 class MotivationPage extends StatefulWidget {
-  const MotivationPage({super.key});
+  final LanguageService languageService;
+
+  const MotivationPage({
+    super.key,
+    required this.languageService,
+  });
 
   @override
   State<MotivationPage> createState() => _MotivationPageState();
@@ -15,8 +22,8 @@ class _MotivationPageState extends State<MotivationPage>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-  
-  Quote _currentQuote = QuoteDatabase.getRandomQuote();
+
+  late qdb.Quote _currentQuote;
   int _quotesViewed = 0;
   Timer? _autoSwitchTimer;
   bool _autoSwitch = true;
@@ -24,9 +31,25 @@ class _MotivationPageState extends State<MotivationPage>
   @override
   void initState() {
     super.initState();
+    _initializeQuote();
     _setupAnimations();
     _loadQuotesViewed();
     _startAutoSwitch();
+
+    // 언어 변경 시 명언 업데이트
+    widget.languageService.addListener(_onLanguageChanged);
+  }
+
+  void _initializeQuote() {
+    _currentQuote = qdb.QuoteDatabase.getRandomQuoteByLanguage(
+        widget.languageService.currentLanguage.languageCode);
+  }
+
+  void _onLanguageChanged() {
+    setState(() {
+      _currentQuote = qdb.QuoteDatabase.getRandomQuoteByLanguage(
+          widget.languageService.currentLanguage.languageCode);
+    });
   }
 
   void _setupAnimations() {
@@ -81,7 +104,8 @@ class _MotivationPageState extends State<MotivationPage>
   void _nextQuote() {
     _animationController.reverse().then((_) {
       setState(() {
-        _currentQuote = QuoteDatabase.getRandomQuote();
+        _currentQuote = qdb.QuoteDatabase.getRandomQuoteByLanguage(
+            widget.languageService.currentLanguage.languageCode);
         _quotesViewed++;
       });
       _saveQuotesViewed();
@@ -93,7 +117,7 @@ class _MotivationPageState extends State<MotivationPage>
     setState(() {
       _autoSwitch = !_autoSwitch;
     });
-    
+
     if (_autoSwitch) {
       _startAutoSwitch();
     } else {
@@ -105,6 +129,7 @@ class _MotivationPageState extends State<MotivationPage>
   void dispose() {
     _animationController.dispose();
     _autoSwitchTimer?.cancel();
+    widget.languageService.removeListener(_onLanguageChanged);
     super.dispose();
   }
 
@@ -174,7 +199,7 @@ class _MotivationPageState extends State<MotivationPage>
                   ],
                 ),
               ),
-              
+
               // 명언 카드
               Expanded(
                 child: Padding(
@@ -211,7 +236,8 @@ class _MotivationPageState extends State<MotivationPage>
                                 const SizedBox(height: 24),
                                 Text(
                                   _currentQuote.text,
-                                  style: theme.textTheme.headlineSmall?.copyWith(
+                                  style:
+                                      theme.textTheme.headlineSmall?.copyWith(
                                     fontWeight: FontWeight.w600,
                                     height: 1.5,
                                     color: colorScheme.onSurface,
@@ -225,12 +251,14 @@ class _MotivationPageState extends State<MotivationPage>
                                     vertical: 8,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: colorScheme.primaryContainer.withOpacity(0.5),
+                                    color: colorScheme.primaryContainer
+                                        .withOpacity(0.5),
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: Text(
                                     '- ${_currentQuote.author} -',
-                                    style: theme.textTheme.titleMedium?.copyWith(
+                                    style:
+                                        theme.textTheme.titleMedium?.copyWith(
                                       fontWeight: FontWeight.w500,
                                       color: colorScheme.onPrimaryContainer,
                                       fontStyle: FontStyle.italic,
@@ -246,7 +274,7 @@ class _MotivationPageState extends State<MotivationPage>
                   ),
                 ),
               ),
-              
+
               // 하단 진행 표시
               if (_autoSwitch)
                 Container(
@@ -261,7 +289,7 @@ class _MotivationPageState extends State<MotivationPage>
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        '10초 후 새로운 명언',
+                        AppLocalizations.of(context).newQuoteIn10Seconds,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: colorScheme.onSurface.withOpacity(0.6),
                         ),
@@ -275,7 +303,7 @@ class _MotivationPageState extends State<MotivationPage>
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _nextQuote,
-        label: const Text('새 명언'),
+        label: Text(AppLocalizations.of(context).newQuote),
         icon: const Icon(Icons.auto_awesome),
         backgroundColor: colorScheme.primaryContainer,
         foregroundColor: colorScheme.onPrimaryContainer,
